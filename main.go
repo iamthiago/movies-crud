@@ -63,7 +63,11 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(moviesMap[id])
+	if movie, exists := moviesMap[id]; exists {
+		json.NewEncoder(w).Encode(movie)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +79,7 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
+// it can work as an upsert
 func updateMovie(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
@@ -102,7 +107,10 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	delete(moviesMap, id)
-
-	w.WriteHeader(http.StatusOK)
+	if movie, exists := moviesMap[id]; exists {
+		delete(moviesMap, movie.ID)
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }

@@ -61,7 +61,10 @@ func main() {
 		getMovies(w, r, db)
 	}).Methods("GET")
 
-	r.HandleFunc("/movies/{id}", getMovie).Methods("GET")
+	r.HandleFunc("/movies/{id}", func(w http.ResponseWriter, r *http.Request) {
+		getMovie(w, r, db)
+	}).Methods("GET")
+
 	r.HandleFunc("/movies", createMovie).Methods("POST")
 	r.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
 	r.HandleFunc("/movies/{id}", deleteMovie).Methods("DELETE")
@@ -76,13 +79,14 @@ func getMovies(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	movies, err := repository.GetMovies(db)
 	if err != nil {
 		fmt.Println("Error fetching movies", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	json.NewEncoder(w).Encode(movies)
 }
 
-func getMovie(w http.ResponseWriter, r *http.Request) {
+func getMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -92,11 +96,20 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if movie, exists := moviesMap[id]; exists {
-		json.NewEncoder(w).Encode(movie)
-	} else {
-		w.WriteHeader(http.StatusNotFound)
+	movie, err := repository.GetMovieById(db, id)
+	if err != nil {
+		if movie.IsEmpty() {
+			fmt.Println("Movie is empty", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		fmt.Println("Error fetching movie by id", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	json.NewEncoder(w).Encode(movie)
 }
 
 func createMovie(w http.ResponseWriter, r *http.Request) {

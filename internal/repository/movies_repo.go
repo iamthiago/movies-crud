@@ -33,3 +33,18 @@ var GetMovies = func(db *sql.DB) ([]models.Movie, error) {
 
 	return movies, nil
 }
+
+var GetMovieById = func(db *sql.DB, id int64) (models.Movie, error) {
+	var movie models.Movie
+	var director models.Director
+
+	row := db.QueryRow("select m.id, m.isbn, m.title, d.first_name, d.last_name from movies m, directors d where m.director_id = d.id and m.id = ?", id)
+	if err := row.Scan(&movie.ID, &movie.Isbn, &movie.Title, &director.Firstname, &director.LastName); err != nil {
+		if err == sql.ErrNoRows {
+			return movie, fmt.Errorf("getMovieById %d: no such movie", id)
+		}
+		return movie, fmt.Errorf("getMovieById %d: %v", id, err)
+	}
+	movie.Director = &director
+	return movie, nil
+}

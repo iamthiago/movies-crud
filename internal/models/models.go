@@ -11,3 +11,7 @@ type Director struct {
 	Firstname string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
+
+func (m Movie) IsEmpty() bool {
+	return m.ID == 0
+}

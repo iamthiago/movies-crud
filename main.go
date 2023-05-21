@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/iamthiago/movies-crud/internal/repository"
 )
 
 type Movie struct {
@@ -69,37 +70,10 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
-func getMoviesFromDB(db *sql.DB) ([]Movie, error) {
-	var movies []Movie
-
-	rows, err := db.Query("select m.id, m.isbn, m.title, d.first_name, d.last_name from movies m, directors d where m.director_id = d.id")
-	if err != nil {
-		return nil, fmt.Errorf("getMovies %v", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var m Movie
-		var d Director
-
-		if err := rows.Scan(&m.ID, &m.Isbn, &m.Title, &d.Firstname, &d.LastName); err != nil {
-			return nil, fmt.Errorf("getMovies %v", err)
-		}
-		m.Director = &d
-		movies = append(movies, m)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("getMovies %v", err)
-	}
-
-	return movies, nil
-}
-
 func getMovies(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.Header().Set("Content-Type", "application/json")
 
-	movies, err := getMoviesFromDB(db)
+	movies, err := repository.GetMovies(db)
 	if err != nil {
 		fmt.Println("Error fetching movies", err)
 		return

@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"strconv"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/iamthiago/movies-crud/internal/models"
 	"github.com/iamthiago/movies-crud/internal/repository"
 )
 
@@ -65,7 +65,10 @@ func main() {
 		getMovie(w, r, db)
 	}).Methods("GET")
 
-	r.HandleFunc("/movies", createMovie).Methods("POST")
+	r.HandleFunc("/movies", func(w http.ResponseWriter, r *http.Request) {
+		createMovie(w, r, db)
+	}).Methods("POST")
+
 	r.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
 	r.HandleFunc("/movies/{id}", deleteMovie).Methods("DELETE")
 
@@ -112,13 +115,19 @@ func getMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func createMovie(w http.ResponseWriter, r *http.Request) {
+func createMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.Header().Set("Content-Type", "application/json")
-	var movie Movie
+	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
-	movie.ID = rand.Int63n(1000000)
-	moviesMap[movie.ID] = movie
-	json.NewEncoder(w).Encode(movie)
+
+	movieWithId, err := repository.CreateMovie(db, movie)
+	if err != nil {
+		fmt.Println("Error creating movie", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(movieWithId)
 }
 
 // it can work as an upsert

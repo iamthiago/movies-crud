@@ -48,3 +48,27 @@ var GetMovieById = func(db *sql.DB, id int64) (models.Movie, error) {
 	movie.Director = &director
 	return movie, nil
 }
+
+var CreateMovie = func(db *sql.DB, movie models.Movie) (models.Movie, error) {
+	directorResult, dirErr := db.Exec("insert into directors (first_name, last_name) values (?, ?)", movie.Director.Firstname, movie.Director.LastName)
+
+	if dirErr != nil {
+		return models.Movie{}, fmt.Errorf("add directors: %v", dirErr)
+	}
+	directorsId, dirLastInsertErr := directorResult.LastInsertId()
+	if dirLastInsertErr != nil {
+		return models.Movie{}, fmt.Errorf("get directors last inserted id %v", dirLastInsertErr)
+	}
+
+	movieResult, movErr := db.Exec("insert into movies (isbn, title, director_id) values (?, ?, ?)", movie.Isbn, movie.Title, directorsId)
+	if movErr != nil {
+		return models.Movie{}, fmt.Errorf("add movies: %v", movErr)
+	}
+	movieId, movLAstInsertErr := movieResult.LastInsertId()
+	if movLAstInsertErr != nil {
+		return models.Movie{}, fmt.Errorf("get movie last inserted id %v", movLAstInsertErr)
+	}
+
+	movie.ID = movieId
+	return movie, nil
+}

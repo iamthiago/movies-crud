@@ -69,7 +69,10 @@ func main() {
 		createMovie(w, r, db)
 	}).Methods("POST")
 
-	r.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
+	r.HandleFunc("/movies/{id}", func(w http.ResponseWriter, r *http.Request) {
+		updateMovie(w, r, db)
+	}).Methods("PUT")
+
 	r.HandleFunc("/movies/{id}", deleteMovie).Methods("DELETE")
 
 	fmt.Printf("Starting server at port 8080\n")
@@ -130,8 +133,7 @@ func createMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(movieWithId)
 }
 
-// it can work as an upsert
-func updateMovie(w http.ResponseWriter, r *http.Request) {
+func updateMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -141,11 +143,17 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var movie Movie
+	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
-	movie.ID = id
-	moviesMap[id] = movie
-	json.NewEncoder(w).Encode(movie)
+
+	updatedMovie, dbErr := repository.UpdateMovie(db, id, movie)
+	if dbErr != nil {
+		fmt.Println("Error updating movie", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(updatedMovie)
 }
 
 func deleteMovie(w http.ResponseWriter, r *http.Request) {

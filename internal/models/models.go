@@ -8,6 +8,7 @@ type Movie struct {
 }
 
 type Director struct {
+	ID        int64  `json:"id"`
 	Firstname string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }

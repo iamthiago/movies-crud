@@ -10,7 +10,7 @@ import (
 var GetMovies = func(db *sql.DB) ([]models.Movie, error) {
 	var movies []models.Movie
 
-	rows, err := db.Query("select m.id, m.isbn, m.title, d.first_name, d.last_name from movies m, directors d where m.director_id = d.id")
+	rows, err := db.Query("select m.id, m.isbn, m.title, d.id, d.first_name, d.last_name from movies m, directors d where m.director_id = d.id")
 	if err != nil {
 		return nil, fmt.Errorf("getMovies %v", err)
 	}
@@ -20,7 +20,7 @@ var GetMovies = func(db *sql.DB) ([]models.Movie, error) {
 		var m models.Movie
 		var d models.Director
 
-		if err := rows.Scan(&m.ID, &m.Isbn, &m.Title, &d.Firstname, &d.LastName); err != nil {
+		if err := rows.Scan(&m.ID, &m.Isbn, &m.Title, &d.ID, &d.Firstname, &d.LastName); err != nil {
 			return nil, fmt.Errorf("getMovies %v", err)
 		}
 		m.Director = &d
@@ -38,8 +38,8 @@ var GetMovieById = func(db *sql.DB, id int64) (models.Movie, error) {
 	var movie models.Movie
 	var director models.Director
 
-	row := db.QueryRow("select m.id, m.isbn, m.title, d.first_name, d.last_name from movies m, directors d where m.director_id = d.id and m.id = ?", id)
-	if err := row.Scan(&movie.ID, &movie.Isbn, &movie.Title, &director.Firstname, &director.LastName); err != nil {
+	row := db.QueryRow("select m.id, m.isbn, m.title, d.id, d.first_name, d.last_name from movies m, directors d where m.director_id = d.id and m.id = ?", id)
+	if err := row.Scan(&movie.ID, &movie.Isbn, &movie.Title, &director.ID, &director.Firstname, &director.LastName); err != nil {
 		if err == sql.ErrNoRows {
 			return movie, fmt.Errorf("getMovieById %d: no such movie", id)
 		}
@@ -51,7 +51,6 @@ var GetMovieById = func(db *sql.DB, id int64) (models.Movie, error) {
 
 var CreateMovie = func(db *sql.DB, movie models.Movie) (models.Movie, error) {
 	directorResult, dirErr := db.Exec("insert into directors (first_name, last_name) values (?, ?)", movie.Director.Firstname, movie.Director.LastName)
-
 	if dirErr != nil {
 		return models.Movie{}, fmt.Errorf("add directors: %v", dirErr)
 	}
@@ -70,5 +69,26 @@ var CreateMovie = func(db *sql.DB, movie models.Movie) (models.Movie, error) {
 	}
 
 	movie.ID = movieId
+	return movie, nil
+}
+
+var UpdateMovie = func(db *sql.DB, id int64, movie models.Movie) (models.Movie, error) {
+	directorResult, dirErr := db.Exec("insert into directors (first_name, last_name) values (?, ?)", movie.Director.Firstname, movie.Director.LastName)
+	if dirErr != nil {
+		return models.Movie{}, fmt.Errorf("add directors: %v", dirErr)
+	}
+	directorsId, dirLastInsertErr := directorResult.LastInsertId()
+	if dirLastInsertErr != nil {
+		return models.Movie{}, fmt.Errorf("get directors last inserted id %v", dirLastInsertErr)
+	}
+
+	_, movErr := db.Exec("update movies set isbn = ?, title = ?, director_id = ? where id = ?", movie.Isbn, movie.Title, directorsId, id)
+	if movErr != nil {
+		return models.Movie{}, fmt.Errorf("update movies: %v", movErr)
+	}
+
+	movie.ID = id
+	movie.Director.ID = directorsId
+
 	return movie, nil
 }

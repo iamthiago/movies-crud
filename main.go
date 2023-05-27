@@ -14,20 +14,6 @@ import (
 	"github.com/iamthiago/movies-crud/internal/repository"
 )
 
-type Movie struct {
-	ID       int64     `json:"id"`
-	Isbn     string    `json:"isbn"`
-	Title    string    `json:"title"`
-	Director *Director `json:"director"`
-}
-
-type Director struct {
-	Firstname string `json:"firstName"`
-	LastName  string `json:"lastName"`
-}
-
-var moviesMap = make(map[int64]Movie)
-
 func main() {
 	cfg := mysql.Config{
 		User:                 "root",
@@ -53,10 +39,6 @@ func main() {
 
 	r := mux.NewRouter()
 
-	moviesMap[1] = Movie{ID: 1, Isbn: "123", Title: "Movie 1", Director: &Director{Firstname: "John", LastName: "Doe"}}
-	moviesMap[2] = Movie{ID: 2, Isbn: "456", Title: "Movie 2", Director: &Director{Firstname: "Alex", LastName: "Smith"}}
-	moviesMap[3] = Movie{ID: 3, Isbn: "789", Title: "Movie 3", Director: &Director{Firstname: "Jane", LastName: "Black"}}
-
 	r.HandleFunc("/movies", func(w http.ResponseWriter, r *http.Request) {
 		getMovies(w, r, db)
 	}).Methods("GET")
@@ -73,7 +55,9 @@ func main() {
 		updateMovie(w, r, db)
 	}).Methods("PUT")
 
-	r.HandleFunc("/movies/{id}", deleteMovie).Methods("DELETE")
+	r.HandleFunc("/movies/{id}", func(w http.ResponseWriter, r *http.Request) {
+		deleteMovie(w, r, db)
+	}).Methods("DELETE")
 
 	fmt.Printf("Starting server at port 8080\n")
 	log.Fatal(http.ListenAndServe(":8080", r))
@@ -156,7 +140,7 @@ func updateMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(updatedMovie)
 }
 
-func deleteMovie(w http.ResponseWriter, r *http.Request) {
+func deleteMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -166,10 +150,12 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if movie, exists := moviesMap[id]; exists {
-		delete(moviesMap, movie.ID)
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusNotFound)
+	dbErr := repository.DeleteMovie(db, id)
+	if dbErr != nil {
+		fmt.Println("Error deleting movie", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }

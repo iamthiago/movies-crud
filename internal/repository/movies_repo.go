@@ -92,3 +92,11 @@ var UpdateMovie = func(db *sql.DB, id int64, movie models.Movie) (models.Movie, 
 
 	return movie, nil
 }
+
+var DeleteMovie = func(db *sql.DB, id int64) error {
+	_, err := db.Exec("delete from movies where id = ?", id)
+	if err != nil {
+		return fmt.Errorf("delete movies: %v", err)
+	}
+	return nil
+}

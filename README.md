@@ -9,4 +9,5 @@ Right now you can download the code and run on your machine using:
 - go build
 - go run main.go
 
-That should bootstrap the server and you can hit the urls described in the routes section, currently in the main.go, which should be eventually moved to it's own file.
+# Docker Mysql
+docker run --name=mysql -p3306:3306 -e MYSQL_ROOT_HOST=% -e MYSQL_ROOT_PASSWORD=root -d mysql/mysql-server:5.7.41

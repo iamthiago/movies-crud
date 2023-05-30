@@ -1,16 +1,10 @@
 package models
 
 type Movie struct {
-	ID       int64     `json:"id"`
-	Isbn     string    `json:"isbn"`
-	Title    string    `json:"title"`
-	Director *Director `json:"director"`
-}
-
-type Director struct {
-	ID        int64  `json:"id"`
-	Firstname string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	ID       int64  `json:"id"`
+	Isbn     string `json:"isbn"`
+	Title    string `json:"title"`
+	Director string `json:"director"`
 }
 
 func (m Movie) IsEmpty() bool {

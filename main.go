@@ -8,24 +8,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/iamthiago/movies-crud/configs"
 	"github.com/iamthiago/movies-crud/internal/models"
 	"github.com/iamthiago/movies-crud/internal/repository"
 )
 
 func main() {
-	cfg := mysql.Config{
-		User:                 "root",
-		Passwd:               "root",
-		Net:                  "tcp",
-		Addr:                 "localhost:3306",
-		DBName:               "movies",
-		AllowNativePasswords: true,
-	}
-
-	var err error
-	db, err := sql.Open("mysql", cfg.FormatDSN())
+	db, err := configs.GetMySQLDB()
 	if err != nil {
 		log.Fatal(err)
 		panic(err)

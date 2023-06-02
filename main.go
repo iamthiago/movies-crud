@@ -10,8 +10,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/iamthiago/movies-crud/configs"
-	"github.com/iamthiago/movies-crud/internal/models"
 	"github.com/iamthiago/movies-crud/internal/repository"
+	"github.com/iamthiago/movies-crud/pkg/models"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/iamthiago/movies-crud/internal/models"
+	"github.com/iamthiago/movies-crud/pkg/models"
 )
 
 var GetMovies = func(db *sql.DB) ([]models.Movie, error) {

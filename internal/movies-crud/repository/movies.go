@@ -7,10 +7,22 @@ import (
 	"github.com/iamthiago/movies-crud/pkg/models"
 )
 
-var GetMovies = func(db *sql.DB) ([]models.Movie, error) {
+type MoviesRepository interface {
+	GetMovies() ([]models.Movie, error)
+	GetMovieById(id int64) (models.Movie, error)
+	CreateMovie(movie models.Movie) (models.Movie, error)
+	UpdateMovie(id int64, movie models.Movie) (models.Movie, error)
+	DeleteMovie(id int64) error
+}
+
+type Repository struct {
+	DB *sql.DB
+}
+
+func (r Repository) GetMovies() ([]models.Movie, error) {
 	var movies []models.Movie
 
-	rows, err := db.Query("select id, isbn, title, director from movies")
+	rows, err := r.DB.Query("select id, isbn, title, director from movies")
 	if err != nil {
 		return nil, fmt.Errorf("getMovies %v", err)
 	}
@@ -32,10 +44,10 @@ var GetMovies = func(db *sql.DB) ([]models.Movie, error) {
 	return movies, nil
 }
 
-var GetMovieById = func(db *sql.DB, id int64) (models.Movie, error) {
+func (r Repository) GetMovieById(id int64) (models.Movie, error) {
 	var movie models.Movie
 
-	row := db.QueryRow("select id, isbn, title, director from movies where id = ?", id)
+	row := r.DB.QueryRow("select id, isbn, title, director from movies where id = ?", id)
 	if err := row.Scan(&movie.ID, &movie.Isbn, &movie.Title, &movie.Director); err != nil {
 		if err == sql.ErrNoRows {
 			return movie, fmt.Errorf("getMovieById %d: no such movie", id)
@@ -45,8 +57,8 @@ var GetMovieById = func(db *sql.DB, id int64) (models.Movie, error) {
 	return movie, nil
 }
 
-var CreateMovie = func(db *sql.DB, movie models.Movie) (models.Movie, error) {
-	movieResult, movErr := db.Exec("insert into movies (isbn, title, director) values (?, ?, ?)", movie.Isbn, movie.Title, movie.Director)
+func (r Repository) CreateMovie(movie models.Movie) (models.Movie, error) {
+	movieResult, movErr := r.DB.Exec("insert into movies (isbn, title, director) values (?, ?, ?)", movie.Isbn, movie.Title, movie.Director)
 	if movErr != nil {
 		return models.Movie{}, fmt.Errorf("add movies: %v", movErr)
 	}
@@ -59,8 +71,8 @@ var CreateMovie = func(db *sql.DB, movie models.Movie) (models.Movie, error) {
 	return movie, nil
 }
 
-var UpdateMovie = func(db *sql.DB, id int64, movie models.Movie) (models.Movie, error) {
-	_, movErr := db.Exec("update movies set isbn = ?, title = ?, director = ? where id = ?", movie.Isbn, movie.Title, movie.Director, id)
+func (r Repository) UpdateMovie(id int64, movie models.Movie) (models.Movie, error) {
+	_, movErr := r.DB.Exec("update movies set isbn = ?, title = ?, director = ? where id = ?", movie.Isbn, movie.Title, movie.Director, id)
 	if movErr != nil {
 		return models.Movie{}, fmt.Errorf("update movies: %v", movErr)
 	}
@@ -70,8 +82,8 @@ var UpdateMovie = func(db *sql.DB, id int64, movie models.Movie) (models.Movie, 
 	return movie, nil
 }
 
-var DeleteMovie = func(db *sql.DB, id int64) error {
-	_, err := db.Exec("delete from movies where id = ?", id)
+func (r Repository) DeleteMovie(id int64) error {
+	_, err := r.DB.Exec("delete from movies where id = ?", id)
 	if err != nil {
 		return fmt.Errorf("delete movies: %v", err)
 	}

@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,10 +12,10 @@ import (
 	"github.com/iamthiago/movies-crud/pkg/models"
 )
 
-func GetMovies(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetMovies(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
 	w.Header().Set("Content-Type", "application/json")
 
-	movies, err := repository.GetMovies(db)
+	movies, err := repo.GetMovies()
 	if err != nil {
 		fmt.Println("Error fetching movies", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -26,7 +25,7 @@ func GetMovies(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(movies)
 }
 
-func GetMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -36,7 +35,7 @@ func GetMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	movie, err := repository.GetMovieById(db, id)
+	movie, err := repo.GetMovieById(id)
 	if err != nil {
 		if movie.IsEmpty() {
 			fmt.Println("Movie is empty", err)
@@ -52,12 +51,12 @@ func GetMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func CreateMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func CreateMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
 	w.Header().Set("Content-Type", "application/json")
 	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
 
-	movieWithId, err := repository.CreateMovie(db, movie)
+	movieWithId, err := repo.CreateMovie(movie)
 	if err != nil {
 		fmt.Println("Error creating movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -67,7 +66,7 @@ func CreateMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(movieWithId)
 }
 
-func UpdateMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func UpdateMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -80,7 +79,7 @@ func UpdateMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
 
-	updatedMovie, dbErr := repository.UpdateMovie(db, id, movie)
+	updatedMovie, dbErr := repo.UpdateMovie(id, movie)
 	if dbErr != nil {
 		fmt.Println("Error updating movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -90,7 +89,7 @@ func UpdateMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(updatedMovie)
 }
 
-func DeleteMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func DeleteMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -100,7 +99,7 @@ func DeleteMovie(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	dbErr := repository.DeleteMovie(db, id)
+	dbErr := repo.DeleteMovie(id)
 	if dbErr != nil {
 		fmt.Println("Error deleting movie", err)
 		w.WriteHeader(http.StatusInternalServerError)

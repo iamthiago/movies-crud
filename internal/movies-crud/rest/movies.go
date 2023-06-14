@@ -8,14 +8,14 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/iamthiago/movies-crud/internal/movies-crud/repository"
+	"github.com/iamthiago/movies-crud/internal/movies-crud/service"
 	"github.com/iamthiago/movies-crud/pkg/models"
 )
 
-func GetMovies(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
+func GetMovies(w http.ResponseWriter, r *http.Request, service service.Service) {
 	w.Header().Set("Content-Type", "application/json")
 
-	movies, err := repo.GetMovies()
+	movies, err := service.GetMovies()
 	if err != nil {
 		fmt.Println("Error fetching movies", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -25,7 +25,7 @@ func GetMovies(w http.ResponseWriter, r *http.Request, repo repository.MoviesRep
 	json.NewEncoder(w).Encode(movies)
 }
 
-func GetMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
+func GetMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -35,7 +35,7 @@ func GetMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepo
 		return
 	}
 
-	movie, err := repo.GetMovieById(id)
+	movie, err := service.GetMovieById(id)
 	if err != nil {
 		if movie.IsEmpty() {
 			fmt.Println("Movie is empty", err)
@@ -51,12 +51,12 @@ func GetMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepo
 	json.NewEncoder(w).Encode(movie)
 }
 
-func CreateMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
+func CreateMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
 	w.Header().Set("Content-Type", "application/json")
 	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
 
-	movieWithId, err := repo.CreateMovie(movie)
+	movieWithId, err := service.CreateMovie(movie)
 	if err != nil {
 		fmt.Println("Error creating movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -66,7 +66,7 @@ func CreateMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesR
 	json.NewEncoder(w).Encode(movieWithId)
 }
 
-func UpdateMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
+func UpdateMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -79,7 +79,7 @@ func UpdateMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesR
 	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
 
-	updatedMovie, dbErr := repo.UpdateMovie(id, movie)
+	updatedMovie, dbErr := service.UpdateMovie(id, movie)
 	if dbErr != nil {
 		fmt.Println("Error updating movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -89,7 +89,7 @@ func UpdateMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesR
 	json.NewEncoder(w).Encode(updatedMovie)
 }
 
-func DeleteMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesRepository) {
+func DeleteMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -99,7 +99,7 @@ func DeleteMovie(w http.ResponseWriter, r *http.Request, repo repository.MoviesR
 		return
 	}
 
-	dbErr := repo.DeleteMovie(id)
+	dbErr := service.DeleteMovie(id)
 	if dbErr != nil {
 		fmt.Println("Error deleting movie", err)
 		w.WriteHeader(http.StatusInternalServerError)

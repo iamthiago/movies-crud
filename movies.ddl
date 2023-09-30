@@ -1,4 +1,5 @@
 CREATE DATABASE movies;
+use movies;
 
 CREATE TABLE movies (
     id              INT AUTO_INCREMENT NOT NULL,

@@ -14,7 +14,7 @@ type MoviesService interface {
 }
 
 type Service struct {
-	Repository *repository.Repository
+	Repository repository.MoviesRepository
 }
 
 func (s Service) GetMovies() ([]models.Movie, error) {

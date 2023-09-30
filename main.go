@@ -6,14 +6,21 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+<<<<<<< HEAD
 	"github.com/iamthiago/movies-crud/configs"
 	"github.com/iamthiago/movies-crud/internal/movies-crud/controller"
 	"github.com/iamthiago/movies-crud/internal/movies-crud/repository"
 	"github.com/iamthiago/movies-crud/internal/movies-crud/service"
+=======
+	"github.com/iamthiago/movies-crud/internal/movies/controller"
+	"github.com/iamthiago/movies-crud/internal/movies/mysql"
+	"github.com/iamthiago/movies-crud/internal/movies/repository"
+	"github.com/iamthiago/movies-crud/internal/movies/service"
+>>>>>>> fd6d43a (Rename movie classes and packages)
 )
 
 func main() {
-	db, err := configs.GetMySQLDB()
+	db, err := mysql.GetMySQLDB()
 	if err != nil {
 		log.Fatal(err)
 		panic(err)

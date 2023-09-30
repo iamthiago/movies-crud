@@ -7,8 +7,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/iamthiago/movies-crud/configs"
+	"github.com/iamthiago/movies-crud/internal/movies-crud/controller"
 	"github.com/iamthiago/movies-crud/internal/movies-crud/repository"
-	"github.com/iamthiago/movies-crud/internal/movies-crud/rest"
 	"github.com/iamthiago/movies-crud/internal/movies-crud/service"
 )
 
@@ -31,23 +31,23 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/movies", func(w http.ResponseWriter, r *http.Request) {
-		rest.GetMovies(w, r, movieService)
+		controller.GetMovies(w, r, movieService)
 	}).Methods("GET")
 
 	r.HandleFunc("/movies/{id}", func(w http.ResponseWriter, r *http.Request) {
-		rest.GetMovie(w, r, movieService)
+		controller.GetMovie(w, r, movieService)
 	}).Methods("GET")
 
 	r.HandleFunc("/movies", func(w http.ResponseWriter, r *http.Request) {
-		rest.CreateMovie(w, r, movieService)
+		controller.CreateMovie(w, r, movieService)
 	}).Methods("POST")
 
 	r.HandleFunc("/movies/{id}", func(w http.ResponseWriter, r *http.Request) {
-		rest.UpdateMovie(w, r, movieService)
+		controller.UpdateMovie(w, r, movieService)
 	}).Methods("PUT")
 
 	r.HandleFunc("/movies/{id}", func(w http.ResponseWriter, r *http.Request) {
-		rest.DeleteMovie(w, r, movieService)
+		controller.DeleteMovie(w, r, movieService)
 	}).Methods("DELETE")
 
 	fmt.Printf("Starting server at port 8080\n")

@@ -1,4 +1,4 @@
-package rest
+package controller
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"github.com/iamthiago/movies-crud/pkg/models"
 )
 
-func GetMovies(w http.ResponseWriter, r *http.Request, service service.Service) {
+func GetMovies(w http.ResponseWriter, r *http.Request, service service.MoviesService) {
 	w.Header().Set("Content-Type", "application/json")
 
 	movies, err := service.GetMovies()
@@ -25,7 +25,7 @@ func GetMovies(w http.ResponseWriter, r *http.Request, service service.Service) 
 	json.NewEncoder(w).Encode(movies)
 }
 
-func GetMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
+func GetMovie(w http.ResponseWriter, r *http.Request, service service.MoviesService) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -51,7 +51,7 @@ func GetMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func CreateMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
+func CreateMovie(w http.ResponseWriter, r *http.Request, service service.MoviesService) {
 	w.Header().Set("Content-Type", "application/json")
 	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
@@ -66,7 +66,7 @@ func CreateMovie(w http.ResponseWriter, r *http.Request, service service.Service
 	json.NewEncoder(w).Encode(movieWithId)
 }
 
-func UpdateMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
+func UpdateMovie(w http.ResponseWriter, r *http.Request, service service.MoviesService) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
@@ -89,7 +89,7 @@ func UpdateMovie(w http.ResponseWriter, r *http.Request, service service.Service
 	json.NewEncoder(w).Encode(updatedMovie)
 }
 
-func DeleteMovie(w http.ResponseWriter, r *http.Request, service service.Service) {
+func DeleteMovie(w http.ResponseWriter, r *http.Request, service service.MoviesService) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	id, err := strconv.ParseInt(params["id"], 10, 64)

@@ -11,7 +11,9 @@ Right now you can download the code and run on your machine using:
 
 # Docker Mysql
 Create a docker instance of mysql server
-- docker run --name=mysql-go -p3306:3306 -e MYSQL_ROOT_HOST=% -e MYSQL_ROOT_PASSWORD=root -d mysql/mysql-server:5.7.41
+
+    docker run --name=mysql-go -p3306:3306 -e MYSQL_ROOT_HOST=% -e MYSQL_ROOT_PASSWORD=root -d mysql/mysql-server:5.7.41
 
 Connect to it and run the script that can be found in movies.dll
-- docker exec -it mysql-go mysql -uroot -p
+
+    docker exec -it mysql-go mysql -uroot -p

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/iamthiago/movies-crud/internal/movies-crud/repository"
+	"github.com/iamthiago/movies-crud/internal/movies/repository"
 	"github.com/iamthiago/movies-crud/pkg/models"
 )
 

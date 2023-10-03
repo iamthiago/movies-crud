@@ -56,7 +56,7 @@ func CreateMovie(w http.ResponseWriter, r *http.Request, service service.MoviesS
 	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
 
-	movieWithId, err := service.CreateMovie(movie)
+	movieWithId, err := service.CreateMovie(&movie)
 	if err != nil {
 		fmt.Println("Error creating movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -79,7 +79,7 @@ func UpdateMovie(w http.ResponseWriter, r *http.Request, service service.MoviesS
 	var movie models.Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
 
-	updatedMovie, dbErr := service.UpdateMovie(id, movie)
+	updatedMovie, dbErr := service.UpdateMovie(id, &movie)
 	if dbErr != nil {
 		fmt.Println("Error updating movie", err)
 		w.WriteHeader(http.StatusInternalServerError)

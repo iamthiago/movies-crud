@@ -54,6 +54,16 @@ func (m *mockRepo) DeleteMovie(id int64) error {
 	return args.Error(0)
 }
 
+type mockKafkaProducer struct {
+	Producer mock.Mock
+	Topic    *string
+}
+
+func (m *mockKafkaProducer) SendMovieEvent(movieBytes []byte) error {
+	args := m.Producer.Called(movieBytes)
+	return args.Error(0)
+}
+
 func TestGetMovies(t *testing.T) {
 	mockRepository := new(mockRepo)
 	service := Service{Repository: mockRepository}
@@ -181,7 +191,9 @@ func TestGetMovieById(t *testing.T) {
 
 func TestCreateMovie(t *testing.T) {
 	mockRepository := new(mockRepo)
-	service := Service{Repository: mockRepository}
+	mockKafkaProducer := new(mockKafkaProducer)
+
+	service := Service{Repository: mockRepository, KafkaProducer: mockKafkaProducer}
 
 	testCases := []struct {
 		name      string
@@ -195,6 +207,7 @@ func TestCreateMovie(t *testing.T) {
 			mockSetup: func(movie *models.Movie) []*mock.Call {
 				return []*mock.Call{
 					mockRepository.On("CreateMovie", mock.Anything).Return(movie, nil),
+					mockKafkaProducer.Producer.On("SendMovieEvent", mock.Anything).Return(nil),
 				}
 			},
 			req: models.Movie{
@@ -220,7 +233,7 @@ func TestCreateMovie(t *testing.T) {
 				Director: "Steven Spielberg",
 			},
 			wantErr: true,
-			err:     "failed",
+			err:     "error when creating movie failed",
 		},
 	}
 

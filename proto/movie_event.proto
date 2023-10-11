@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package com.github.iamthiago.movies.v1;
+
+option go_package = "/events";
+
+message MovieEvent {
+    int64 id = 1;
+    string isbn = 2;
+    string title = 3;
+    string director = 4;
+}

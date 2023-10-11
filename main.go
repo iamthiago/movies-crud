@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/iamthiago/movies-crud/internal/movies/controller"
 	"github.com/iamthiago/movies-crud/internal/movies/mysql"
+	"github.com/iamthiago/movies-crud/internal/movies/producer"
 	"github.com/iamthiago/movies-crud/internal/movies/repository"
 	"github.com/iamthiago/movies-crud/internal/movies/service"
 )
@@ -19,14 +20,18 @@ func main() {
 		panic(err)
 	}
 
-	pingErr := db.Ping()
-	if pingErr != nil {
-		log.Fatal(pingErr)
+	topic := "movies"
+	producer, err := producer.GetKafkaProducer(&topic)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
 	}
-	fmt.Println("Connected to Mysql!")
+
+	defer db.Close()
+	defer producer.Producer.Close()
 
 	movieRepo := repository.Repository{DB: db}
-	movieService := service.Service{Repository: &movieRepo}
+	movieService := service.Service{Repository: &movieRepo, KafkaProducer: &producer}
 
 	r := mux.NewRouter()
 

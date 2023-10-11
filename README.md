@@ -17,3 +17,22 @@ Create a docker instance of mysql server
 Connect to it and run the script that can be found in movies.dll
 
     docker exec -it mysql-go mysql -uroot -p
+
+# Kafka & Protobuf
+You will need an up and running kafka cluster to be able to post created movie events.
+Once you have it, create a topic called "movies".
+
+Protobuf messages are being sent to this topic, so any streaming solution can
+read from it and parse it back based on the proto message available in this repository.
+
+The generated proto is committed in the repository, but if you want to modify and then
+generate it again, you can do so by running this command:
+
+    protoc --go_out=./internal/movies/ ./proto/movie_event.proto
+
+# Test
+For testing, please run the following command:
+
+    go test -v ./...
+
+This will ensure to run any tests on any directories

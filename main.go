@@ -21,17 +21,17 @@ func main() {
 	}
 
 	topic := "movies"
-	producer, err := producer.GetKafkaProducer(&topic)
+	kafkaProducer, err := producer.GetKafkaProducer(&topic)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
 
 	defer db.Close()
-	defer producer.Producer.Close()
+	defer kafkaProducer.Producer.Close()
 
 	movieRepo := repository.Repository{DB: db}
-	movieService := service.Service{Repository: &movieRepo, KafkaProducer: &producer}
+	movieService := service.Service{Repository: &movieRepo, KafkaProducer: &kafkaProducer}
 
 	r := mux.NewRouter()
 
